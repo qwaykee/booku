@@ -1,9 +1,15 @@
 package com.qwaykee.booku.data.preferences
 
 import android.content.Context
-import android.net.Uri
-import androidx.compose.runtime.*
-import androidx.datastore.preferences.core.*
+import android.util.Log
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -41,6 +47,8 @@ sealed class PreferencesKeys<T>(val key: Preferences.Key<T>) {
     object InternetEnabled : PreferencesKeys<Boolean>(booleanPreferencesKey("internet_enabled"))
     object LanguageCode : PreferencesKeys<String>(stringPreferencesKey("language_code"))
     object LanguageDisplay : PreferencesKeys<String>(stringPreferencesKey("language_display"))
+    object ScanHiddenFiles : PreferencesKeys<Boolean>(booleanPreferencesKey("scan_hidden_files"))
+    object ScanBehavior : PreferencesKeys<String>(stringPreferencesKey("scan_behavior"))
 }
 
 // Helper function to remember preferences in a Composable
@@ -50,6 +58,7 @@ fun <T> rememberPreference(
     key: Preferences.Key<T>,
     defaultValue: T
 ): T {
+    Log.i("DATASTORE", "called rememberPreference")
     val flow = remember { PreferencesManager(context).getPreference(key, defaultValue) }
     val value by flow.collectAsState(initial = defaultValue)
     return value

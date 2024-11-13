@@ -6,7 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -22,7 +21,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -57,20 +55,9 @@ import org.mongodb.kbson.ObjectId
 data class BookScreen(val bookId: ObjectId) : Screen {
     @Composable
     override fun Content() {
+        val navigator = LocalNavigator.currentOrThrow
         val viewModel = rememberScreenModel { BookScreenModel(bookId) }
         val book by viewModel.book.collectAsState(Book())
-
-        book?.let {
-            BookDetails(it, viewModel)
-        } ?: run {
-            LoadingOrError()
-        }
-    }
-
-    @Composable
-    fun BookDetails(book: Book, viewModel: BookScreenModel) {
-        val navigator = LocalNavigator.currentOrThrow
-        val bookFlow by viewModel.book.collectAsState(Book())
 
         Scaffold(
             topBar = {
@@ -88,7 +75,7 @@ data class BookScreen(val bookId: ObjectId) : Screen {
                         IconButton({ viewModel.toggleFavorite() }) {
                             Icon(
                                 painter = painterResource(
-                                    if (bookFlow!!.isFavorite) {
+                                    if (book?.isFavorite == true) {
                                         R.drawable.ic_favorite_filled
                                     } else {
                                         R.drawable.ic_favorite
@@ -108,8 +95,10 @@ data class BookScreen(val bookId: ObjectId) : Screen {
                 )
             },
             floatingActionButton = {
-                Button({ navigator.push(ReaderScreen(book._id)) }) {
-                    Text(stringResource(R.string.read))
+                book?.let {
+                    Button({ navigator.push(ReaderScreen(it._id)) }) {
+                        Text(stringResource(R.string.read))
+                    }
                 }
             }
         ) { padding ->
@@ -125,7 +114,7 @@ data class BookScreen(val bookId: ObjectId) : Screen {
     }
 
     @Composable
-    fun BookHorizontalPresentation(book: Book, padding: PaddingValues) {
+    fun BookHorizontalPresentation(book: Book?, padding: PaddingValues) {
         Row(
             modifier = Modifier
                 .fillMaxSize()
@@ -150,7 +139,7 @@ data class BookScreen(val bookId: ObjectId) : Screen {
     }
 
     @Composable
-    fun BookVerticalPresentation(book: Book, padding: PaddingValues) {
+    fun BookVerticalPresentation(book: Book?, padding: PaddingValues) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -177,7 +166,7 @@ data class BookScreen(val bookId: ObjectId) : Screen {
     }
 
     @Composable
-    fun BookCover(book: Book, modifier: Modifier = Modifier) {
+    fun BookCover(book: Book?, modifier: Modifier = Modifier) {
         val navigator = LocalNavigator.currentOrThrow
 
         Column (
@@ -187,7 +176,7 @@ data class BookScreen(val bookId: ObjectId) : Screen {
         ) {
             // TODO: Add onLongClick modify image
             AsyncImage(
-                model = book.imagePath,
+                model = book?.imagePath ?: "", // TODO: Add placeholder image
                 contentDescription = null,
                 modifier = Modifier
                     .height(270.dp)
@@ -199,12 +188,12 @@ data class BookScreen(val bookId: ObjectId) : Screen {
             )
 
             Text(
-                text = book.title,
+                text = book?.title ?: stringResource(R.string.title),
                 style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(top = 6.dp)
             )
 
-            book.author?.let { author ->
+            book?.author?.let { author ->
                 Text(
                     text = author.name,
                     modifier = Modifier
@@ -230,7 +219,7 @@ data class BookScreen(val bookId: ObjectId) : Screen {
     }
 
     @Composable
-    fun BookBanner(book: Book) {
+    fun BookBanner(book: Book?) {
         Row (
             modifier = Modifier
                 .padding(horizontal = 16.dp, vertical = 8.dp)
@@ -242,7 +231,7 @@ data class BookScreen(val bookId: ObjectId) : Screen {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column (horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(book.year.toString())
+                Text(book?.year.toString())
                 Text(
                     text = stringResource(R.string.year),
                     style = MaterialTheme.typography.labelLarge,
@@ -251,7 +240,7 @@ data class BookScreen(val bookId: ObjectId) : Screen {
             }
 
             Column (horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(book.pages.toString())
+                Text(book?.pages.toString())
 
                 Text(
                     text = stringResource(R.string.pages),
@@ -260,23 +249,25 @@ data class BookScreen(val bookId: ObjectId) : Screen {
                 )
             }
 
-            Column (horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(book.language)
+            book?.language?.let {
+                Column (horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(it)
 
-                Text(
-                    text = stringResource(R.string.language),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                    Text(
+                        text = stringResource(R.string.language),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
     }
 
     @Composable
-    fun BookCollection(book: Book) {
+    fun BookCollection(book: Book?) {
         val navigator = LocalNavigator.currentOrThrow
 
-        book.collection?.let { collection ->
+        book?.collection?.let { collection ->
             Text(
                 text = collection.name,
                 modifier = Modifier.combinedClickable (
@@ -295,19 +286,21 @@ data class BookScreen(val bookId: ObjectId) : Screen {
     }
 
     @Composable
-    fun BookDescription(book: Book) {
-        Column {
-            Text(
-                text = stringResource(R.string.description),
-                style = MaterialTheme.typography.titleLarge
-            )
+    fun BookDescription(book: Book?) {
+        book?.description?.let {
+            Column {
+                Text(
+                    text = stringResource(R.string.description),
+                    style = MaterialTheme.typography.titleLarge
+                )
 
-            Text(book.description)
+                Text(it)
+            }
         }
     }
 
     @Composable
-    fun BookInformation(book: Book) {
+    fun BookInformation(book: Book?) {
         Column {
             Text(
                 text = stringResource(R.string.informations),
@@ -316,55 +309,34 @@ data class BookScreen(val bookId: ObjectId) : Screen {
 
             Text(
                 listOf(
-                    "${book.getReadingProgressionPercentage()}%",
-                    book.lastReadDateText()
+                    "${book?.getReadingProgressionPercentage()}%",
+                    book?.lastReadDateText()
                 ).joinToString(" • ")
             )
 
             val downloadUrl = listOf(
-                book.downloadURLFromHTTP,
-                book.downloadURLFromIPFS,
-                book.downloadURLFromTorrent
+                book?.downloadURLFromHTTP,
+                book?.downloadURLFromIPFS,
+                book?.downloadURLFromTorrent
             ).firstOrNull {
                 it != null
             } ?: stringResource(R.string.no_download_url)
 
             Text(
                 listOf(
-                    book.formattedFileSize(),
+                    book?.formattedFileSize(),
                     downloadUrl
                 ).joinToString(" • ")
             )
 
-            Text(stringResource(R.string.publisher_formatted, book.publisher))
-            Text(stringResource(R.string.edition_formatted, book.edition))
-            Text(book.isbn)
-        }
-    }
-
-    @Composable
-    fun LoadingOrError() {
-        val navigator = LocalNavigator.currentOrThrow
-
-        Scaffold(
-            topBar = {
-                LargeTopAppBar(
-                    title = { Text(stringResource(R.string.error)) },
-                    navigationIcon = {
-                        IconButton({ navigator.pop() }) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_back),
-                                contentDescription = stringResource(R.string.back)
-                            )
-                        }
-                    }
-                )
+            book?.publisher?.let {
+                Text(stringResource(R.string.publisher_formatted, it))
             }
-        ) { padding ->
-            Box(modifier = Modifier
-                .padding(padding)
-                .padding(horizontal = 16.dp)) {
-                Text(stringResource(R.string.error_while_fetching_book))
+            book?.edition?.let {
+                Text(stringResource(R.string.edition_formatted, it))
+            }
+            book?.isbn?.let {
+                Text(it)
             }
         }
     }

@@ -130,6 +130,14 @@ class LocalRepository {
         }
     }
 
+    fun getAllCollections(): Flow<List<Collection>> {
+        return realm
+            .query<Collection>()
+            .sort("name", Sort.ASCENDING)
+            .asFlow()
+            .map { it.list }
+    }
+
     suspend fun changeCollection(book: Book, collection: Collection) {
         realm.write {
             findLatest(book)?.let {

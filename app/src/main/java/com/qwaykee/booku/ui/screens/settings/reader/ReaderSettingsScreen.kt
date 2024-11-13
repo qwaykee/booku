@@ -7,6 +7,6 @@ import cafe.adriel.voyager.core.screen.Screen
 class ReaderSettingsScreen : Screen {
     @Composable
     override fun Content() {
-        Text("TODO")
+
     }
 }

@@ -17,26 +17,24 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.navigator.LocalNavigator
-import cafe.adriel.voyager.navigator.currentOrThrow
+import cafe.adriel.voyager.navigator.Navigator
 import com.qwaykee.booku.data.models.Book
 import com.qwaykee.booku.ui.screens.book.BookScreen
 import com.qwaykee.booku.ui.screens.reader.ReaderScreen
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun BookRow(book: Book, shape: Shape) {
-    val navigator = LocalNavigator.currentOrThrow.parent!!
+fun BookRow(book: Book, shape: Shape, navigator: Navigator, modifier: Modifier = Modifier) {
     val progressPercentage = book.getReadingProgressionPercentage()
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .padding(horizontal = 16.dp)
+            .clip(shape)
             .combinedClickable(
                 onClick = { navigator.push(BookScreen(book._id)) },
                 onLongClick = { navigator.push(ReaderScreen(book._id)) }
-            )
-            .clip(shape),
+            ),
         shape = shape,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp),

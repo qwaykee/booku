@@ -22,10 +22,10 @@ fun BookCard(book: Book, navigator: Navigator) {
         contentDescription = book.title,
         contentScale = ContentScale.Crop,
         modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(end = 8.dp)
             .width(96.dp)
             .height(170.dp)
-            .clickable(onClick = { navigator.push(BookScreen(book._id)) })
-            .clip(MaterialTheme.shapes.medium),
+            .clip(MaterialTheme.shapes.medium)
+            .clickable(onClick = { navigator.push(BookScreen(book._id)) }),
     )
 }

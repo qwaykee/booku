@@ -56,4 +56,15 @@
     <string name="first_time"><![CDATA[It seems like you don\'t have any books, start adding some by going into settings (gear icon) > library, there you will be able to import your downloaded books, otherwise, add an online library in settings > internet where you will be able to download books directly. You will find more informations in the settings\' pages]]></string>
     <string name="folders_to_scan">Folders to scan</string>
     <string name="add_folder">Add folder</string>
+    <string name="title">Title</string>
+    <string name="file_scan">File scan</string>
+    <string name="scan_hidden_files">Scan hidden files</string>
+    <string name="do_not_scan">Do not scan</string>
+    <string name="selected_folders">Selected folders</string>
+    <string name="whole_device">Whole device</string>
+    <string name="manage_selected_folders">Manage selected folders</string>
+    <string name="filters">Filters</string>
+    <string name="all">All</string>
+    <string name="unfinished">Unfinished</string>
+    <string name="enable_internet">Enable internet</string>
 </resources>

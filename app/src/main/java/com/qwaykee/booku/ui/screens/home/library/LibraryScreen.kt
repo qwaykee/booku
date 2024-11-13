@@ -12,15 +12,20 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -31,10 +36,13 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.qwaykee.booku.R
+import com.qwaykee.booku.data.models.Collection
 import com.qwaykee.booku.ui.screens.home.common.BookCard
 import com.qwaykee.booku.ui.screens.home.common.BookRow
 import com.qwaykee.booku.ui.screens.home.common.shapeByIndex
 import com.qwaykee.booku.ui.screens.reader.ReaderScreen
+
+enum class ReadingProgression { ALL, UNREAD, UNFINISHED, READ }
 
 class LibraryScreen : Tab {
     override val options: TabOptions
@@ -56,16 +64,22 @@ class LibraryScreen : Tab {
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow.parent!!
         val viewModel = navigator.rememberNavigatorScreenModel { LibraryScreenModel() }
+
         val books by viewModel.books.collectAsState(emptyList())
         val favoriteBooks by viewModel.favoriteBooks.collectAsState(emptyList())
+        val collections by viewModel.collections.collectAsState(emptyList())
+
+        var selectedProgression by remember { mutableStateOf<ReadingProgression?>(null) }
+        var selectedCollections by remember { mutableStateOf<List<Collection>>(emptyList()) }
 
         if (books.isNotEmpty()) {
             Column {
-                viewModel.lastReadBook?.let {
+                books.firstOrNull()?.let {
                     Card(
                         modifier = Modifier
                             .padding(16.dp)
                             .fillMaxWidth()
+                            .clip(MaterialTheme.shapes.extraLarge)
                             .clickable { navigator.push(ReaderScreen(it._id)) },
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant,
@@ -84,7 +98,7 @@ class LibraryScreen : Tab {
                                 )
 
                                 Text(
-                                    "${it.title} • ${it.author!!.name} • ${it.getReadingProgressionPercentage()}%",
+                                    "${it.title} • ${it.author?.name ?: stringResource(R.string.unknown_author)} • ${it.getReadingProgressionPercentage()}%",
                                     style = MaterialTheme.typography.bodyMedium
                                 )
                             }
@@ -107,15 +121,82 @@ class LibraryScreen : Tab {
                     }
                 }
 
-                LazyRow {
+                LazyRow (modifier = Modifier.padding(16.dp)) {
                     itemsIndexed(favoriteBooks) { _, book ->
                         BookCard(book, navigator)
                     }
                 }
 
+                Row (modifier = Modifier.padding(horizontal = 16.dp)) {
+                    Row {
+                        FilterChip(
+                            selected = selectedProgression == ReadingProgression.ALL,
+                            onClick = { selectedProgression = ReadingProgression.ALL },
+                            label = { Text(stringResource(R.string.all)) },
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                        FilterChip(
+                            selected = selectedProgression == ReadingProgression.UNREAD,
+                            onClick = { selectedProgression = ReadingProgression.UNREAD },
+                            label = { Text(stringResource(R.string.unread)) },
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                        FilterChip(
+                            selected = selectedProgression == ReadingProgression.UNFINISHED,
+                            onClick = { selectedProgression = ReadingProgression.UNFINISHED },
+                            label = { Text(stringResource(R.string.unfinished)) },
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                        FilterChip(
+                            selected = selectedProgression == ReadingProgression.READ,
+                            onClick = { selectedProgression = ReadingProgression.READ },
+                            label = { Text(stringResource(R.string.read)) },
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                    }
+                    // TODO: Test collections
+                    if (collections.isNotEmpty()) {
+                        VerticalDivider()
+                    }
+                    Row {
+                        collections.forEach { collection ->
+                            FilterChip(
+                                selected = selectedCollections.contains(collection),
+                                onClick = {
+                                    selectedCollections = if (selectedCollections.contains(collection)) {
+                                        selectedCollections - collection
+                                    } else {
+                                        selectedCollections + collection
+                                    }
+                                },
+                                label = { Text(collection.name) }
+                            )
+                        }
+                    }
+                }
+
+                val filteredBooks = books.filter { book ->
+                    val progress = book.getReadingProgressionPercentage()
+
+                    when (selectedProgression) {
+                        ReadingProgression.UNREAD -> progress == 0
+                        ReadingProgression.UNFINISHED -> progress in 1..99
+                        ReadingProgression.READ -> progress == 100
+                        else -> true
+                    } && (selectedCollections.isEmpty() || selectedCollections.contains(book.collection))
+                }
+
                 LazyColumn {
-                    itemsIndexed(books) { index, book ->
-                        BookRow(book, shapeByIndex(index, books.size))
+                    itemsIndexed(
+                        items = filteredBooks,
+                        key = { index, _ -> index }
+                    ) { index, book ->
+                        BookRow(
+                            book = book,
+                            shape = shapeByIndex(index, filteredBooks.size),
+                            navigator = navigator,
+                            modifier = Modifier.animateItem()
+                        )
                     }
                 }
             }

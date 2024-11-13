@@ -25,5 +25,11 @@ class LibraryScreenModel : ScreenModel {
             emptyList()
         )
 
-    val lastReadBook = if (books.value.isNotEmpty()) { books.value[0] } else { null }
+    val collections = localRepository
+        .getAllCollections()
+        .stateIn(
+            screenModelScope,
+            SharingStarted.WhileSubscribed(),
+            emptyList()
+        )
 }
