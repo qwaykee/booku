@@ -1,5 +1,7 @@
 package com.qwaykee.booku.data.models
 
+import io.realm.kotlin.ext.realmListOf
+import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
 import io.realm.kotlin.types.annotations.PrimaryKey
 import org.mongodb.kbson.ObjectId
@@ -38,10 +40,8 @@ class Book : RealmObject {
     var collection: Collection? = null
 
     // source information
-    // if all are empty, file is local
-    var downloadURLFromIPFS: String? = null
-    var downloadURLFromTorrent: String? = null
-    var downloadURLFromHTTP: String? = null
+    // if empty, file is local ; supported urls: http(s), torrent, ipfs ; urls should be sorted by priority
+    var downloadMirrors: RealmList<String> = realmListOf()
     var originalURL: String = "" // link to page where the book was found
 
     // file on disk information

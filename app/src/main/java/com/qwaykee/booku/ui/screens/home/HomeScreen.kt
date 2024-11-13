@@ -16,12 +16,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -29,17 +32,13 @@ import cafe.adriel.voyager.navigator.tab.CurrentTab
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabNavigator
-import com.qwaykee.booku.Booku
 import com.qwaykee.booku.R
-import com.qwaykee.booku.data.models.FeedEntry
-import com.qwaykee.booku.data.models.OnlineLibrary
 import com.qwaykee.booku.data.preferences.PreferencesKeys
 import com.qwaykee.booku.data.preferences.rememberPreference
 import com.qwaykee.booku.ui.screens.home.feed.FeedScreen
 import com.qwaykee.booku.ui.screens.home.library.LibraryScreen
 import com.qwaykee.booku.ui.screens.home.online.OnlineLibraryScreen
 import com.qwaykee.booku.ui.screens.settings.SettingsScreen
-import io.realm.kotlin.ext.query
 
 class HomeScreen : Screen {
     @Composable
@@ -122,19 +121,25 @@ class HomeScreen : Screen {
 
     @Composable
     fun BottomBar() {
-        val realm = Booku.realm
-        val internetEnabled = rememberPreference(LocalContext.current, PreferencesKeys.InternetEnabled.key,false)
-        val feedHasEntries = realm.query<FeedEntry>().find().isNotEmpty()
-        val onlineLibraryHasEntries =  realm.query<OnlineLibrary>().find().isNotEmpty()
+        val viewModel = rememberScreenModel { HomeScreenModel() }
 
-        if (internetEnabled && (feedHasEntries || onlineLibraryHasEntries)) {
+        val internetEnabled = rememberPreference(
+            LocalContext.current,
+            PreferencesKeys.InternetEnabled.key,
+            false
+        )
+
+        val feedsCount by viewModel.feedsCount.collectAsState()
+        val onlineLibrariesCount by viewModel.onlineLibrariesCount.collectAsState()
+
+        if (internetEnabled && (feedsCount > 0 || onlineLibrariesCount > 0)) {
             NavigationBar (containerColor = MaterialTheme.colorScheme.background) {
                 Spacer(modifier = Modifier.weight(1f))
-                if (feedHasEntries) {
+                if (feedsCount > 0) {
                     TabNavigationItem(FeedScreen())
                 }
                 TabNavigationItem(LibraryScreen(), preselected = true)
-                if (onlineLibraryHasEntries) {
+                if (onlineLibrariesCount > 0) {
                     TabNavigationItem(OnlineLibraryScreen())
                 }
                 Spacer(modifier = Modifier.weight(1f))

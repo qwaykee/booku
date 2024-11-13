@@ -127,7 +127,7 @@ class LibraryScreen : Tab {
                     }
                 }
 
-                Row (modifier = Modifier.padding(horizontal = 16.dp)) {
+                Row (modifier = Modifier.padding(horizontal = 8.dp)) {
                     Row {
                         FilterChip(
                             selected = selectedProgression == ReadingProgression.ALL,

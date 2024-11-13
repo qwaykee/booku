@@ -1,7 +1,6 @@
 package com.qwaykee.booku.data.preferences
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -58,7 +57,6 @@ fun <T> rememberPreference(
     key: Preferences.Key<T>,
     defaultValue: T
 ): T {
-    Log.i("DATASTORE", "called rememberPreference")
     val flow = remember { PreferencesManager(context).getPreference(key, defaultValue) }
     val value by flow.collectAsState(initial = defaultValue)
     return value

@@ -6,6 +6,7 @@ import com.qwaykee.booku.data.models.Book
 import com.qwaykee.booku.data.models.Collection
 import com.qwaykee.booku.data.models.Feed
 import com.qwaykee.booku.data.models.FeedEntry
+import com.qwaykee.booku.data.models.OnlineLibrary
 import com.qwaykee.booku.data.network.NetworkHelper
 import io.realm.kotlin.Realm
 import io.realm.kotlin.UpdatePolicy
@@ -154,8 +155,8 @@ class LocalRepository {
             return file
         }
 
-        val url = book.downloadURLFromHTTP ?: book.downloadURLFromIPFS ?: book.downloadURLFromTorrent
-        ?: throw IllegalStateException("No valid download URL available")
+        // TODO: Handle no url better
+        val url = book.downloadMirrors.firstOrNull() ?: throw IllegalStateException("No valid download URL available")
 
         Log.i("Booku", "Downloading file")
         val downloadedFile = NetworkHelper().fetchDataFromUrl(url)
@@ -175,6 +176,13 @@ class LocalRepository {
 
         Log.i("Booku", "Returning File object")
         return file
+    }
+
+    fun countFeeds(): Flow<Long> {
+        return realm
+            .query<Feed>()
+            .count()
+            .asFlow()
     }
 
     suspend fun addFeed(feed: Feed) {
@@ -222,5 +230,12 @@ class LocalRepository {
             findLatest(feed)
                 ?.also { delete(it) }
         }
+    }
+
+    fun countOnlineLibraries(): Flow<Long> {
+        return realm
+            .query<OnlineLibrary>()
+            .count()
+            .asFlow()
     }
 }

@@ -8,6 +8,7 @@ import com.qwaykee.booku.data.models.Author
 import com.qwaykee.booku.data.models.Book
 import com.qwaykee.booku.data.models.OnlineLibrary
 import com.qwaykee.booku.data.network.NetworkHelper
+import io.realm.kotlin.ext.realmListOf
 
 @Suppress("RemoveExplicitTypeArguments", "unused")
 class OnlineLibraryRepository(
@@ -64,9 +65,8 @@ class OnlineLibraryRepository(
             edition = document.read<String>(selectors.edition)
             isbn = document.read<String>(selectors.isbn)
             imagePath = document.read<String>(selectors.imageURL)
-            downloadURLFromIPFS = document.read<String>(selectors.downloadURLFromIPFS)
-            downloadURLFromTorrent = document.read<String>(selectors.downloadURLFromTorrent)
-            downloadURLFromHTTP = document.read<String>(selectors.downloadURLFromHTTP)
+            // TODO: Fix
+            downloadMirrors = realmListOf(document.read<String>(selectors.downloadMirrors.first()))
             fileSize = document.read<Int>(selectors.fileSize)
             fileExtension = document.read<String>(selectors.fileExtension)
         }
@@ -94,10 +94,10 @@ class OnlineLibraryRepository(
             edition = document.selectFirst(selectors.edition ?: "")?.text() ?: ""
             isbn = document.selectFirst(selectors.isbn ?: "")?.text() ?: ""
             imagePath = document.selectFirst(selectors.imageURL ?: "")?.text() ?: ""
-            downloadURLFromIPFS = document.selectFirst(selectors.downloadURLFromIPFS ?: "")?.text()
-            downloadURLFromTorrent = document.selectFirst(selectors.downloadURLFromTorrent ?: "")
-                ?.text()
-            downloadURLFromHTTP = document.selectFirst(selectors.downloadURLFromHTTP ?: "")?.text()
+            // TODO: Fix
+            downloadMirrors = realmListOf(
+                    document.selectFirst(selectors.downloadMirrors.firstOrNull() ?: "")?.text() ?: ""
+                    )
             fileSize = document.selectFirst(selectors.fileSize ?: "")?.text()?.toInt() ?: 0
             fileExtension = document.selectFirst(selectors.fileExtension ?: "")?.text() ?: ""
         }

@@ -30,6 +30,7 @@ class InternetSettingsScreen : Screen {
         val navigator = LocalNavigator.currentOrThrow
         val context = LocalContext.current
 
+        // TODO: Switch to viewModel to avoid unnecessary function calls on recomposition
         val internetEnabled = rememberPreference(
             context,
             PreferencesKeys.InternetEnabled.key,

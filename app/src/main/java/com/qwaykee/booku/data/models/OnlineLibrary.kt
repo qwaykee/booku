@@ -69,11 +69,7 @@ class BookSelectors : EmbeddedRealmObject {
     var isbn: String? = null
     var imageURL: String? = null
 
-    // at least one of three should be set
-    var downloadURLFromIPFS: String? = null
-    var downloadURLFromTorrent: String? = null
-    var downloadURLFromHTTP: String? = null
-
+    var downloadMirrors: RealmList<String> = realmListOf()
     var fileSize: String? = null
     // the dot prefix will be automatically removed
     // preferred file format in order: epub, mobi/azw3, cbz, fb2, pdf, txt

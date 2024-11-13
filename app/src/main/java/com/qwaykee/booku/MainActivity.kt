@@ -76,7 +76,7 @@ class MainActivity : ComponentActivity() {
                     readingProgression = 200 // Example pages read
                     isFavorite = false
                     lastReadDate = System.currentTimeMillis()
-                    downloadURLFromHTTP = "https://github.com/IDPF/epub3-samples/releases/download/20230704/accessible_epub_3.epub"
+                    downloadMirrors = realmListOf("https://github.com/IDPF/epub3-samples/releases/download/20230704/accessible_epub_3.epub")
                     imagePath = "https://gratisography.com/wp-content/uploads/2024/01/gratisography-cyber-kitty-800x525.jpg" // Example path
                 })
 
