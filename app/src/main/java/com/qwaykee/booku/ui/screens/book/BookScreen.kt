@@ -314,13 +314,7 @@ data class BookScreen(val bookId: ObjectId) : Screen {
                 ).joinToString(" • ")
             )
 
-            val downloadUrl = listOf(
-                book?.downloadURLFromHTTP,
-                book?.downloadURLFromIPFS,
-                book?.downloadURLFromTorrent
-            ).firstOrNull {
-                it != null
-            } ?: stringResource(R.string.no_download_url)
+            val downloadUrl = book?.downloadMirrors?.firstOrNull() ?: stringResource(R.string.no_download_url)
 
             Text(
                 listOf(

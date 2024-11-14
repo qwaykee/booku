@@ -77,7 +77,7 @@ class LibraryScreen : Tab {
                 books.firstOrNull()?.let {
                     Card(
                         modifier = Modifier
-                            .padding(16.dp)
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
                             .fillMaxWidth()
                             .clip(MaterialTheme.shapes.extraLarge)
                             .clickable { navigator.push(ReaderScreen(it._id)) },
@@ -121,13 +121,13 @@ class LibraryScreen : Tab {
                     }
                 }
 
-                LazyRow (modifier = Modifier.padding(16.dp)) {
+                LazyRow (modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                     itemsIndexed(favoriteBooks) { _, book ->
                         BookCard(book, navigator)
                     }
                 }
 
-                Row (modifier = Modifier.padding(horizontal = 8.dp)) {
+                Row (modifier = Modifier.padding(horizontal = 16.dp)) {
                     Row {
                         FilterChip(
                             selected = selectedProgression == ReadingProgression.ALL,

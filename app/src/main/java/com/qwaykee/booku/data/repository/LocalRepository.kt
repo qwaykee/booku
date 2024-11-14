@@ -1,13 +1,11 @@
 package com.qwaykee.booku.data.repository
 
-import android.util.Log
 import com.qwaykee.booku.Booku
 import com.qwaykee.booku.data.models.Book
 import com.qwaykee.booku.data.models.Collection
 import com.qwaykee.booku.data.models.Feed
 import com.qwaykee.booku.data.models.FeedEntry
 import com.qwaykee.booku.data.models.OnlineLibrary
-import com.qwaykee.booku.data.network.NetworkHelper
 import io.realm.kotlin.Realm
 import io.realm.kotlin.UpdatePolicy
 import io.realm.kotlin.ext.asFlow
@@ -27,6 +25,7 @@ class LocalRepository {
     //        .stateIn(screenModelScope, SharingStarted.WhileSubscribed(), Book())
     // retrieve data from the screen:
     // val book by viewModel.book.collectAsState(Book())
+    // no need for Dispatchers.IO when using asFlow()
 
     private val realm: Realm = Booku.realm
 
@@ -147,35 +146,10 @@ class LocalRepository {
         }
     }
 
-    suspend fun getBookFile(book: Book): File {
+    fun getBookFile(book: Book): File? {
         // TODO: Actually read file from disk
         val file = File(book.filePath)
-        if (file.exists()) {
-            Log.i("Booku", "Found file on disk")
-            return file
-        }
-
-        // TODO: Handle no url better
-        val url = book.downloadMirrors.firstOrNull() ?: throw IllegalStateException("No valid download URL available")
-
-        Log.i("Booku", "Downloading file")
-        val downloadedFile = NetworkHelper().fetchDataFromUrl(url)
-        // TODO: Allow downloading from any type of link
-
-        Log.i("Booku", "Writing downloaded content to File object")
-        file.writeBytes(downloadedFile!!)
-        // TODO: Write file to disk
-
-        realm.write {
-            findLatest(book)?.let { liveBook ->
-                liveBook.filePath = file.path
-                liveBook.fileSize = file.length().toInt()
-                liveBook.fileExtension = file.extension
-            }
-        }
-
-        Log.i("Booku", "Returning File object")
-        return file
+        return if (file.exists()) file else null
     }
 
     fun countFeeds(): Flow<Long> {

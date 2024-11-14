@@ -9,18 +9,23 @@ import com.qwaykee.booku.data.models.Book
 import com.qwaykee.booku.data.models.OnlineLibrary
 import com.qwaykee.booku.data.network.NetworkHelper
 import io.realm.kotlin.ext.realmListOf
+import java.io.File
 
 @Suppress("RemoveExplicitTypeArguments", "unused")
 class OnlineLibraryRepository(
     private val networkHelper: NetworkHelper,
     private val config: OnlineLibrary
 ) {
-    fun getBookFromISBN(isbn: String): Book? {
-        val url = (config.urls?.baseUrl ?: "") + config.urls?.isbnQuery?.let { String.format(it, isbn) }
-        return getBookFromURL(url)
+    suspend fun getBookFromISBN(isbn: String): Book? {
+        return config.urls?.let { urls ->
+            val isbnQuery = urls.isbnQuery ?: return null
+            val isbnUrl = "${urls.baseUrl}${isbnQuery.format(isbn)}"
+
+            getBookFromURL(isbnUrl)
+        }
     }
 
-    fun getBookFromURL(url: String): Book? {
+    suspend fun getBookFromURL(url: String): Book? {
         val response = networkHelper.fetchDataFromUrl(url)
 
         return response?.let {
@@ -32,15 +37,32 @@ class OnlineLibraryRepository(
         }
     }
 
-    fun getSearchResults(query: String): List<Book> {
-        val url = (config.urls?.baseUrl ?: "") + config.urls?.let { String.format(it.searchQuery, query) }
-        val response = networkHelper.fetchDataFromUrl(url)
+    suspend fun getBookFile(book: Book): File? {
+        book.downloadMirrors.forEach { url ->
+            val downloadedFile = networkHelper.fetchDataFromUrl(url)
 
-        return when (config.selectors!!.responseType) {
-            "JSON" -> parseJsonResponse(response.toString())
-            "HTML" -> parseHtmlResponse(response.toString())
-            else -> throw Exception("Unsupported response type")
+            downloadedFile?.let { data ->
+                // TODO: Write file to disk
+                val file = File("")
+                file.writeBytes(data)
+                return file
+            }
         }
+
+        return null
+    }
+
+    suspend fun getSearchResults(query: String): List<Book> {
+        return config.urls?.let { urls ->
+            val searchUrl = "${urls.baseUrl}${urls.searchQuery.format(query)}"
+            val response = networkHelper.fetchDataFromUrl(searchUrl)
+
+            when (config.selectors!!.responseType) {
+                "JSON" -> parseJsonResponse(response.toString())
+                "HTML" -> parseHtmlResponse(response.toString())
+                else -> throw Exception("Unsupported response type")
+            }
+        } ?: emptyList()
     }
 
     private fun jsonToBook(document: DocumentContext): Book {
