@@ -44,7 +44,8 @@ import com.qwaykee.booku.ui.screens.reader.ReaderScreen
 
 enum class ReadingProgression { ALL, UNREAD, UNFINISHED, READ }
 
-class LibraryScreen : Tab {
+object LibraryScreen : Tab {
+    private fun readResolve(): Any = LibraryScreen
     override val options: TabOptions
         @Composable
         get() {

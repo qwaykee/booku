@@ -43,7 +43,7 @@ import com.qwaykee.booku.ui.screens.settings.SettingsScreen
 class HomeScreen : Screen {
     @Composable
     override fun Content() {
-        TabNavigator(LibraryScreen()) {
+        TabNavigator(LibraryScreen) {
             Scaffold (
                 topBar = { TopBar() },
                 bottomBar = { BottomBar() }
@@ -95,7 +95,7 @@ class HomeScreen : Screen {
                     )
                 }
 
-                if (tabNavigator.current != LibraryScreen()) {
+                if (tabNavigator.current != LibraryScreen) {
                     // TODO: Handle refresh button click
                     IconButton(onClick = {
                         when (tabNavigator.current) {
@@ -136,11 +136,11 @@ class HomeScreen : Screen {
             NavigationBar (containerColor = MaterialTheme.colorScheme.background) {
                 Spacer(modifier = Modifier.weight(1f))
                 if (feedsCount > 0) {
-                    TabNavigationItem(FeedScreen())
+                    TabNavigationItem(FeedScreen)
                 }
-                TabNavigationItem(LibraryScreen(), preselected = true)
+                TabNavigationItem(LibraryScreen)
                 if (onlineLibrariesCount > 0) {
-                    TabNavigationItem(OnlineLibraryScreen())
+                    TabNavigationItem(OnlineLibraryScreen)
                 }
                 Spacer(modifier = Modifier.weight(1f))
             }
@@ -148,15 +148,8 @@ class HomeScreen : Screen {
     }
 
     @Composable
-    private fun RowScope.TabNavigationItem(tab: Tab, preselected: Boolean = false) {
+    private fun RowScope.TabNavigationItem(tab: Tab) {
         val tabNavigator = LocalTabNavigator.current
-        val alreadySelectedPreselection = remember { mutableStateOf(false) }
-
-        if (preselected && !alreadySelectedPreselection.value) {
-            tabNavigator.current = tab
-            alreadySelectedPreselection.value = true
-        }
-
         NavigationBarItem(
             selected = tabNavigator.current == tab,
             onClick = { tabNavigator.current = tab },

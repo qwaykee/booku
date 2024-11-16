@@ -7,7 +7,7 @@ import com.qwaykee.booku.data.models.FeedEntry
 import com.qwaykee.booku.data.network.NetworkHelper
 
 class FeedRepository(private val networkHelper: NetworkHelper = NetworkHelper()) {
-    fun getFeed(url: String): Feed {
+    suspend fun getFeed(url: String): Feed {
         // TODO: Handle empty or null texts in selectFirst().text()!!
         // should support rss and atom feeds
         val response = networkHelper.fetchDataFromUrl(url)
@@ -27,13 +27,13 @@ class FeedRepository(private val networkHelper: NetworkHelper = NetworkHelper())
         return feed
     }
 
-    fun getEntries(feed: Feed): List<FeedEntry> {
+    suspend fun getEntries(feed: Feed): List<FeedEntry> {
         val response = networkHelper.fetchDataFromUrl(feed.feedUrl)
         val document = Ksoup.parse(response.toString())
         return parseFeedEntries(document.select("channel > item, feed > entry"))
     }
 
-    private fun parseFeedEntries(entries: Elements): List<FeedEntry> {
+    private suspend fun parseFeedEntries(entries: Elements): List<FeedEntry> {
         return entries.map { entry ->
             val url = entry.selectFirst("link")
                 ?.run { attr("href").takeIf { it.isNotEmpty() } ?: text() }!!
