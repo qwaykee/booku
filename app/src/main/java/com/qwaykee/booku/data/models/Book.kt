@@ -1,5 +1,6 @@
 package com.qwaykee.booku.data.models
 
+import android.annotation.SuppressLint
 import io.realm.kotlin.ext.realmListOf
 import io.realm.kotlin.types.RealmList
 import io.realm.kotlin.types.RealmObject
@@ -34,9 +35,9 @@ class Book : RealmObject {
 
     // user information
     var readingProgression: Int = 0 // pages count
-    var isFavorite: Boolean = false
     var isCompressed: Boolean = false
     var lastReadDate: Long = 0 // timestamp in milliseconds
+    var addedToFavoriteAt: Long = 0 // timestamp in milliseconds ; 0 = not added
     var collection: Collection? = null
 
     // source information
@@ -58,10 +59,12 @@ class Book : RealmObject {
         }
     }
 
+    @SuppressLint("SimpleDateFormat")
     fun lastReadDateText(): String {
         return SimpleDateFormat("dd/MM/yyyy HH:mm").format(Date(lastReadDate))
     }
 
+    @SuppressLint("DefaultLocale")
     fun formattedFileSize(): String {
         if (fileSize < 1024) return "$fileSize B"
 

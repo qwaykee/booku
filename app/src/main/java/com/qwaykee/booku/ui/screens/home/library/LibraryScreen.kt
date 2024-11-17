@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -27,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -35,14 +38,13 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
+import coil.compose.AsyncImage
 import com.qwaykee.booku.R
 import com.qwaykee.booku.data.models.Collection
-import com.qwaykee.booku.ui.screens.home.common.BookCard
+import com.qwaykee.booku.ui.screens.book.BookScreen
 import com.qwaykee.booku.ui.screens.home.common.BookRow
 import com.qwaykee.booku.ui.screens.home.common.shapeByIndex
 import com.qwaykee.booku.ui.screens.reader.ReaderScreen
-
-enum class ReadingProgression { ALL, UNREAD, UNFINISHED, READ }
 
 object LibraryScreen : Tab {
     private fun readResolve(): Any = LibraryScreen
@@ -60,6 +62,8 @@ object LibraryScreen : Tab {
                 )
             }
         }
+
+    enum class ReadingProgression { ALL, UNREAD, UNFINISHED, READ }
 
     @Composable
     override fun Content() {
@@ -122,9 +126,21 @@ object LibraryScreen : Tab {
                     }
                 }
 
-                LazyRow (modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                    itemsIndexed(favoriteBooks) { _, book ->
-                        BookCard(book, navigator)
+                LazyRow (modifier = Modifier.padding(16.dp)) {
+                    itemsIndexed(
+                        items = favoriteBooks,
+                        key = { _, book -> book._id.toByteArray() }
+                    ) { _, book ->
+                        AsyncImage(
+                            model = book.imagePath,
+                            contentDescription = book.title,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .clip(MaterialTheme.shapes.large)
+                                .width(96.dp)
+                                .height(170.dp)
+                                .clickable(onClick = { navigator.push(BookScreen(book._id)) }),
+                        )
                     }
                 }
 
@@ -190,7 +206,7 @@ object LibraryScreen : Tab {
                 LazyColumn {
                     itemsIndexed(
                         items = filteredBooks,
-                        key = { index, _ -> index }
+                        key = { _, book -> book._id.toByteArray() }
                     ) { index, book ->
                         BookRow(
                             book = book,

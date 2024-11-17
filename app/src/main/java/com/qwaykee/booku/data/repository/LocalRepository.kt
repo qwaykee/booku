@@ -54,8 +54,8 @@ class LocalRepository {
 
     fun getFavoriteBooks(): Flow<List<Book>> {
         return realm
-            .query<Book>("isFavorite == $0", true)
-            .sort("lastReadDate", Sort.DESCENDING)
+            .query<Book>("addedToFavoriteAt > 0")
+            .sort("addedToFavoriteAt", Sort.DESCENDING)
             .asFlow()
             .map { it.list }
     }
@@ -105,7 +105,11 @@ class LocalRepository {
     suspend fun toggleFavorite(book: Book) {
         realm.write {
             findLatest(book)?.let {
-                it.isFavorite = !it.isFavorite
+                if (it.addedToFavoriteAt > 0) {
+                    it.addedToFavoriteAt = 0
+                } else {
+                    it.addedToFavoriteAt = System.currentTimeMillis()
+                }
             }
         }
     }
@@ -128,6 +132,22 @@ class LocalRepository {
             findLatest(book)
                 ?.also { delete(it) }
         }
+    }
+
+    fun getCollection(id: ObjectId): Flow<Collection?> {
+        return realm
+            .query<Collection>("_id == $0", id)
+            .first()
+            .asFlow()
+            .map { it.obj }
+    }
+
+    fun getBooksCollection(id: ObjectId): Flow<List<Book>> {
+        return realm
+            .query<Book>("collection._id == $0", id)
+            .find()
+            .asFlow()
+            .map { it.list }
     }
 
     fun getAllCollections(): Flow<List<Collection>> {

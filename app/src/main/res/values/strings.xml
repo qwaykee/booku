@@ -67,4 +67,8 @@
     <string name="all">All</string>
     <string name="unfinished">Unfinished</string>
     <string name="enable_internet">Enable internet</string>
+    <string name="add_to_library">Add to library</string>
+    <string name="no_name">No name</string>
+    <string name="more">More</string>
+    <string name="x_books">%1$d books</string>
 </resources>

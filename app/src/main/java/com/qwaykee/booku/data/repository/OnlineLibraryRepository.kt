@@ -14,10 +14,10 @@ import java.io.File
 @Suppress("RemoveExplicitTypeArguments", "unused")
 class OnlineLibraryRepository(
     private val networkHelper: NetworkHelper,
-    private val config: OnlineLibrary
+    private val config: OnlineLibrary?
 ) {
     suspend fun getBookFromISBN(isbn: String): Book? {
-        return config.urls?.let { urls ->
+        return config?.urls?.let { urls ->
             val isbnQuery = urls.isbnQuery ?: return null
             val isbnUrl = "${urls.baseUrl}${isbnQuery.format(isbn)}"
 
@@ -29,7 +29,7 @@ class OnlineLibraryRepository(
         val response = networkHelper.fetchDataFromUrl(url)
 
         return response?.let {
-            when (config.selectors!!.responseType) {
+            when (config?.selectors!!.responseType) {
                 "JSON" -> jsonToBook(JsonPath.parse(it.toString()))
                 "HTML" -> htmlToBook(Ksoup.parse(it.toString()))
                 else -> throw Exception("Unsupported response type")
@@ -53,7 +53,7 @@ class OnlineLibraryRepository(
     }
 
     suspend fun getSearchResults(query: String): List<Book> {
-        return config.urls?.let { urls ->
+        return config?.urls?.let { urls ->
             val searchUrl = "${urls.baseUrl}${urls.searchQuery.format(query)}"
             val response = networkHelper.fetchDataFromUrl(searchUrl)
 
@@ -66,7 +66,7 @@ class OnlineLibraryRepository(
     }
 
     private fun jsonToBook(document: DocumentContext): Book {
-        val selectors = config.selectors!!.bookSelectors!!
+        val selectors = config?.selectors!!.bookSelectors!!
 
         return Book().apply {
             title = document.read<String>(selectors.title)
@@ -95,7 +95,7 @@ class OnlineLibraryRepository(
     }
 
     private fun htmlToBook(document: Document): Book {
-        val selectors = config.selectors!!.bookSelectors!!
+        val selectors = config?.selectors!!.bookSelectors!!
 
         return Book().apply {
             title = document.selectFirst(selectors.title)?.text() ?: ""
@@ -128,14 +128,14 @@ class OnlineLibraryRepository(
     private fun parseJsonResponse(json: String): List<Book> {
         return JsonPath
             .parse(json)
-            .read<List<Map<String, Any>>>(config.selectors?.searchSelectors?.eachBookSelector ?: "")
+            .read<List<Map<String, Any>>>(config?.selectors?.searchSelectors?.eachBookSelector ?: "")
             .map { jsonToBook(it as DocumentContext) }
     }
 
     private fun parseHtmlResponse(html: String): List<Book> {
         return Ksoup
             .parse(html)
-            .select(config.selectors?.searchSelectors?.eachBookSelector ?: "")
+            .select(config?.selectors?.searchSelectors?.eachBookSelector ?: "")
             .map { htmlToBook(it as Document) }
     }
 }

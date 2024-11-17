@@ -49,7 +49,7 @@ class MainActivity : ComponentActivity() {
                         ""
                     }
                     readingProgression = 180 // Example pages read
-                    isFavorite = true
+                    addedToFavoriteAt = 50L
                     lastReadDate = System.currentTimeMillis()
                     imagePath = "https://letsenhance.io/static/8f5e523ee6b2479e26ecc91b9c25261e/1015f/MainAfter.jpg" // Example path
                 })
@@ -74,7 +74,7 @@ class MainActivity : ComponentActivity() {
                         ""
                     }
                     readingProgression = 200 // Example pages read
-                    isFavorite = false
+                    addedToFavoriteAt = 0
                     lastReadDate = System.currentTimeMillis()
                     downloadMirrors = realmListOf("https://github.com/IDPF/epub3-samples/releases/download/20230704/accessible_epub_3.epub")
                     imagePath = "https://gratisography.com/wp-content/uploads/2024/01/gratisography-cyber-kitty-800x525.jpg" // Example path

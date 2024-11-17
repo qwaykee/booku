@@ -23,12 +23,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,8 +62,16 @@ data class BookScreen(val bookId: ObjectId) : Screen {
         val navigator = LocalNavigator.currentOrThrow
         val viewModel = rememberScreenModel { BookScreenModel(bookId) }
         val book by viewModel.book.collectAsState(Book())
+        val snackbarHostState = remember { SnackbarHostState() }
+
+        LaunchedEffect(Unit) {
+            viewModel.snackbarMessage.collect { message ->
+                snackbarHostState.showSnackbar(message)
+            }
+        }
 
         Scaffold(
+            snackbarHost = { SnackbarHost(snackbarHostState) },
             topBar = {
                 TopAppBar(
                     title = {},
@@ -75,7 +87,7 @@ data class BookScreen(val bookId: ObjectId) : Screen {
                         IconButton({ viewModel.toggleFavorite() }) {
                             Icon(
                                 painter = painterResource(
-                                    if (book?.isFavorite == true) {
+                                    if ((book?.addedToFavoriteAt ?: 0) > 0) {
                                         R.drawable.ic_favorite_filled
                                     } else {
                                         R.drawable.ic_favorite
@@ -87,8 +99,8 @@ data class BookScreen(val bookId: ObjectId) : Screen {
 
                         IconButton({ /* TODO */ }) {
                             Icon(
-                                painter = painterResource(R.drawable.ic_share),
-                                contentDescription = stringResource(R.string.share_book)
+                                painter = painterResource(R.drawable.ic_more),
+                                contentDescription = stringResource(R.string.more)
                             )
                         }
                     }
@@ -96,8 +108,14 @@ data class BookScreen(val bookId: ObjectId) : Screen {
             },
             floatingActionButton = {
                 book?.let {
-                    Button({ navigator.push(ReaderScreen(it._id)) }) {
-                        Text(stringResource(R.string.read))
+                    if (it.filePath.isNotEmpty()) {
+                        Button({ navigator.push(ReaderScreen(it._id)) }) {
+                            Text(stringResource(R.string.read))
+                        }
+                    } else {
+                        Button({ viewModel.addToLibrary() }) {
+                            Text(stringResource(R.string.add_to_library))
+                        }
                     }
                 }
             }
@@ -226,7 +244,7 @@ data class BookScreen(val bookId: ObjectId) : Screen {
                 .clip(MaterialTheme.shapes.large)
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(12.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
